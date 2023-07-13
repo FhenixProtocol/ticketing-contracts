@@ -4,8 +4,8 @@ import hre from "hardhat";
 import { waitForBlock } from "../../utils/block";
 import { createFheInstance } from "../../utils/instance";
 import type { Signers } from "../types";
-import { shouldBehaveLikeCounter } from "./Counter.behavior";
-import { deployCounterFixture, getTokensFromFaucet } from "./Counter.fixture";
+import { shouldBehaveLikeTicket } from "./Ticket.behavior";
+import { deployTicketFixture, getTokensFromFaucet } from "./Ticket.fixture";
 
 describe("Unit tests", function () {
   before(async function () {
@@ -15,8 +15,8 @@ describe("Unit tests", function () {
     await getTokensFromFaucet();
 
     // deploy test contract
-    const { counter, address } = await deployCounterFixture();
-    this.counter = counter;
+    const { ticket, address } = await deployTicketFixture();
+    this.ticket = ticket;
 
     // initiate fhevmjs
     this.instance = await createFheInstance(hre, address);
@@ -24,12 +24,12 @@ describe("Unit tests", function () {
     // set admin account/signer
     const signers = await ethers.getSigners();
     this.signers.admin = signers[0];
-
+    this.signers.user = signers[1];
     // wait for deployment block to finish
     await waitForBlock(hre);
   });
 
-  describe("Counter", function () {
-    shouldBehaveLikeCounter();
+  describe("Ticket", function () {
+    shouldBehaveLikeTicket();
   });
 });
