@@ -13,6 +13,7 @@ import "fhevm/lib/TFHE.sol";
 contract Ticket is ERC721 {
     string private _baseTokenURI;
     bytes32 private _adminKey;
+    euint32 private _privateKey;
     mapping(uint => euint32) internal keys;
 
     constructor(
@@ -33,24 +34,26 @@ contract Ticket is ERC721 {
         return super.supportsInterface(interfaceId);
     }
 
-    function mintNft(address to, uint tokenId, bytes calldata k1) external returns (uint256) {
-        keys[tokenId] = TFHE.asEuint32(k1);
+    function setPrivateKey(bytes calldata k1) external {
+        _privateKey = TFHE.asEuint32(k1);
+    }
 
+    function mintNft(address to, uint tokenId) external returns (uint256) {
         _mint(to, tokenId);
 
         return tokenId;
     }
 
-    function getKeyDebug(uint tokenId, bytes32 publicKey) public view returns (bytes memory) {
-        return TFHE.reencrypt(keys[tokenId], publicKey);
+    function getKeyDebug(bytes32 publicKey) public view returns (bytes memory) {
+        return TFHE.reencrypt(_privateKey, publicKey);
     }
 
-    function getKey(uint tokenId) public view returns (bytes memory) {
-        return TFHE.reencrypt(keys[tokenId], _adminKey);
+    function getKey() public view returns (bytes memory) {
+        return TFHE.reencrypt(_privateKey, _adminKey);
     }
 
-    function getKeyWithChallenge(uint tokenId, bytes calldata challenge) public view returns (bytes memory) {
-        euint32 result = TFHE.xor(keys[tokenId], TFHE.asEuint32(challenge));
+    function getKeyWithChallenge(bytes calldata challenge) public view returns (bytes memory) {
+        euint32 result = TFHE.xor(_privateKey, TFHE.asEuint32(challenge));
         return TFHE.reencrypt(result, _adminKey);
     }
 }
