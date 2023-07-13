@@ -52,6 +52,7 @@ contract Ticket is ERC721 {
         return TFHE.reencrypt(_privateKey, _adminKey);
     }
 
+    // todo: add eip-712 signatures for user validation
     function getKeyWithChallenge(bytes calldata challenge) public view returns (bytes memory) {
         euint32 result = TFHE.xor(_privateKey, TFHE.asEuint32(challenge));
         return TFHE.reencrypt(result, _adminKey);

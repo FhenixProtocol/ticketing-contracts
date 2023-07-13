@@ -8,9 +8,13 @@ const secretPassword = 7;
 
 export function shouldBehaveLikeTicket(): void {
   it("should mint a new NFT from the admin account", async function () {
-    const eAmountCount = this.instance.instance.encrypt32(secretPassword);
-    // tokenid, key
-    await this.ticket.connect(this.signers.admin).mintNft(this.signers.user.address, 0, eAmountCount);
+    const encPw = this.instance.instance.encrypt32(secretPassword);
+
+    await this.ticket.connect(this.signers.admin).setPrivateKey(encPw);
+
+    await waitForBlock(hre);
+
+    await this.ticket.connect(this.signers.admin).mintNft(this.signers.user.address, 0);
 
     await waitForBlock(hre);
 
@@ -20,7 +24,7 @@ export function shouldBehaveLikeTicket(): void {
   });
 
   it("should return the secret password from the debug interface", async function () {
-    const encryptedPassword = await this.ticket.connect(this.signers.admin).getKeyDebug(0, this.instance.publicKey);
+    const encryptedPassword = await this.ticket.connect(this.signers.admin).getKeyDebug(this.instance.publicKey);
 
     const password = this.instance.instance.decrypt(await this.ticket.getAddress(), encryptedPassword);
 
@@ -33,7 +37,7 @@ export function shouldBehaveLikeTicket(): void {
 
     const encryptedResponse = await this.ticket
       .connect(this.signers.admin)
-      .getKeyWithChallenge(0, `0x${challengeEncrypted}`);
+      .getKeyWithChallenge(`0x${challengeEncrypted}`);
 
     console.log(`encrypted response: ${encryptedResponse}`);
 
